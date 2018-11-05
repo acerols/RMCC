@@ -8,6 +8,10 @@ enum{
 	TK_EOF,
 };
 
+enum{
+	ND_NUM = 256,
+};
+
 typedef struct {
 	int ty;
 	int val;
@@ -56,6 +60,12 @@ void tokennize(char *p)
 
 	tokens[i].ty = TK_EOF;
 	tokens[i].input = p;
+/*
+	int j;
+	for(j = 0; j <= i; j++){
+		printf("%d\n", tokens[j].ty);
+	}
+	*/
 }
 /*
 void error(int i)
@@ -66,13 +76,22 @@ void error(int i)
 }
 */
 
+void print_tk(Token tks)
+{
+	if(tks.ty == TK_NUM){
+		printf("%d", tks.val);
+		return;
+	}
+	printf("%c", (char)tks.ty);
+}
+
 Node *expr();
 Node *mul();
 Node *term();
 
 Node *new_node(int op, Node *lhs, Node *rhs)
 {
-	Node *node = malloc(sizeof(Node));
+	Node *node = (Node *)malloc(sizeof(Node));
 	node->op = op;
 	node->lhs = lhs;
 	node->rhs = rhs;
@@ -80,8 +99,9 @@ Node *new_node(int op, Node *lhs, Node *rhs)
 }
 
 Node *new_node_num(int val){
-	Node *node = malloc(sizeof(Node));
-	node->op = TK_NUM;
+	Node *node = (Node *)malloc(sizeof(Node));
+	node->ty = ND_NUM;
+	node->op = ND_NUM;
 	node->val = val;
 	return node;
 }
@@ -100,12 +120,17 @@ Node *expr()
 		pos++;
 		return new_node('-', lhs, expr());
 	}
+	if(tokens[pos].ty == '(' || tokens[pos].ty ==')')
+		return lhs;
+	printf("out_expr\n");
+	printf("tokens[%d].ty == %d", pos, tokens[pos].ty);
 	error("想定しないトークンです : %s", tokens[pos].input);
 }
 
 Node *mul()
 {
 	Node *lhs = term();
+	
 	if(tokens[pos].ty == TK_EOF)
 		return lhs;
 	if(tokens[pos].ty == '*'){
@@ -116,6 +141,10 @@ Node *mul()
 		pos++;
 		return new_node('/', lhs, mul());
 	}
+	if(lhs->op == ND_NUM || lhs->op == '+' || lhs->op == '-'){
+		return lhs;
+	}
+	printf("mul_out");
 	error("想定しないトークンです : %s", tokens[pos].input);
 }
 
@@ -129,24 +158,31 @@ Node *term()
 		Node *node = expr();
 		if(tokens[pos].ty != ')')
 			error("開きカッコに対応する閉じカッコが存在しません: %s", tokens[pos].input);
+		pos++;
+		return node;
 	}
+
+	printf("term_out\n");
 	error("数値でも開きカッコでもないトークンです : %s", tokens[pos].input);
 }
 
 void gen(Node *node)
 {
-	if(node->ty == TK_NUM){
+	if(node->op == ND_NUM){
 		printf("	push %d\n", node->val);
 		return;
 	}
-
-	gen(node->lhs);
-	gen(node->rhs);
-
+	if(node->lhs != NULL){
+		gen(node->lhs);
+	}
+	if(node->rhs != NULL){
+		gen(node->rhs);
+	}
+	
 	printf("	pop rdi\n");
 	printf("	pop rax\n");
 
-	switch(node->ty){
+	switch(node->op){
 		case '+':
 			printf("	add rax, rdi\n");
 			break;
@@ -154,7 +190,7 @@ void gen(Node *node)
 			printf("	sub rax, rdi\n");
 			break;
 		case '*':
-			printf("	mul rax, rdi\n");
+			printf("	imul rax, rdi\n");
 			break;
 		case '/':
 			printf("	div rax, rdi\n");
@@ -171,13 +207,11 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	char *p = "(1+7)*2";
+//	printf("args : %s\n", argv[1]);
 
-	tokennize(p);
-	printf("tokennizedd\n");
+	tokennize(argv[1]);
 	Node *node = expr();
-
-	printf("analys\n");
+//	printf("\n");
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n");
 	printf("main:\n");
@@ -185,7 +219,6 @@ int main(int argc, char **argv)
 	gen(node);
 
 	printf("	pop rax\n");
-	printf("	ret\n");
 
 	printf("	ret\n");
 	return 0;
