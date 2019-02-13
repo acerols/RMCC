@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 enum{
 	TK_NUM = 256,
@@ -60,21 +61,29 @@ void tokennize(char *p)
 
 	tokens[i].ty = TK_EOF;
 	tokens[i].input = p;
+}
 /*
 	int j;
 	for(j = 0; j <= i; j++){
 		printf("%d\n", tokens[j].ty);
 	}
-	*/
-}
-/*
-void error(int i)
-{
-	fprintf(stderr, "予期せぬトークンです : %s\n",
-		tokens[i].input);
-	exit(1);
+	
 }
 */
+
+void error(const char *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	vprintf(format, ap);
+	va_end(ap);
+	exit(1);
+	/*fprintf(stderr, "予期せぬトークンです : %s\n",
+		tokens[i].input);
+	*/
+	exit(1);
+}
+
 
 void print_tk(Token tks)
 {
