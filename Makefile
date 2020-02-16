@@ -8,16 +8,14 @@
 all: rmcc
 
 %.o: $(SRC)%.c
-	$(CC) -c -o object/$@ $(CFLAGS) $<
+	@mkdir -p object
+	@$(CC) -c -o object/$@ $(CFLAGS) $<
 
-rmcc: $(OBJS)
+rmcc: $(OBJS)	
 	$(CC) -o $@ $(addprefix object/, $^) $(LDFLAGS)
-	
-
-	
 
 test: rmcc
 	./test.sh
 
 clean:
-	rm -f rmcc *. *~ tmp* object/*.o
+	@rm -rf rmcc *. *~ tmp* object

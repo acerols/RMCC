@@ -25,16 +25,23 @@ Token *tokenize()
 	Token head;
 	head.next = NULL;
 	Token *cur = &head;
-
+	
 #ifdef debug
 	int c = 0;
 #endif
 
-	while(at_eof()){
+	while(*p){
 		if(isspace(*p)){
 			p++;
 			continue;
 		}
+
+		if('a' <= *p && *p <= 'z'){
+			cur = new_token(TK_IDENT, cur, p++, 1);
+			cur->len = 1;
+			continue;
+		}
+
 		if(startswith(p, "==") || startswith(p, "!=") ||
 		   startswith(p, "<=") || startswith(p, ">=")){
 			cur = new_token(TK_RESERVED, cur, p, 2);
@@ -46,7 +53,7 @@ Token *tokenize()
 			continue;
 		}
 
-		if(strchr("+-*/()<>", *p)){
+		if(strchr("+-*/()<>=", *p)){
 			cur= new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
@@ -58,8 +65,16 @@ Token *tokenize()
 			cur->len = p - q;
 			continue;
 		}
+
+		if(*p == ';'){
+			cur = new_token(TK_RESERVED, cur, p++, 1);
+			continue;
+		}
+
 		error_at(p, "invalid token");
 	}
+
 	new_token(TK_EOF, cur, p, 0);
-	return head.next;
+  	return head.next;
+	
 }
