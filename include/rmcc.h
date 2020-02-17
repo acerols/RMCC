@@ -50,6 +50,15 @@ struct Token{
 	int len;
 };
 
+typedef struct LVar LVar;
+
+struct {
+	LVar *next;
+	char *name;
+	int len;
+	int offset;
+}LVar;
+
 Token *token;
 char *user_input;
 extern Node *code[100];
