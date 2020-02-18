@@ -11,6 +11,9 @@ int main(int argc, char **argv)
 
 	user_input = argv[1];
 	token = tokenize(user_input);
+	local = calloc(1, sizeof(LVar));
+	local->offset = 0;
+	local->next = NULL;
 	program();
 //	printf("\n");
 	printf(".intel_syntax noprefix\n");

@@ -79,6 +79,16 @@ Token *consume_ident()
 	return NULL;
 }
 
+LVar *find_lvar(Token *tok)
+{
+	for(LVar *var = local; var; var = var->next){
+		if(var->len == tok->len && !memcmp(tok->str, var->name, var->len))
+			return var;
+
+	}
+	return NULL;
+}
+
 void program()
 {
 	int i = 0;
@@ -191,7 +201,20 @@ Node *primary()
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_LVAR;
-		node->offset = (tok->str[0] - 'a' + 1) * 8;
+
+		LVar *lvar = find_lvar(tok);
+		if(lvar){
+			node->offset = lvar->offset;
+		}
+		else{
+			lvar = calloc(1, sizeof(LVar));
+			lvar->next = local;
+			lvar->name = tok->str;
+			lvar->len = tok->len;
+			lvar->offset = local->offset + 8;
+			node->offset = lvar->offset;
+			local = lvar;
+		}
 		return node;
 	}
 
