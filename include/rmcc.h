@@ -20,6 +20,11 @@ typedef enum{
 	ND_RE,
 	ND_ASSIGN,
 	ND_LVAR,
+	ND_RETURN,
+	ND_IF,
+	ND_ELSE,
+	ND_WHILE,
+	ND_FOR,
 	ND_NUM,
 }NodeKind;
 
@@ -27,8 +32,14 @@ typedef struct Node Node;
 
 struct Node{
 	NodeKind kind;
+	Node *next;
 	Node *lhs;
 	Node *rhs;
+
+	Node *cond;
+	Node *then;
+	Node *els;
+
 	int val;
 	int offset;
 };
@@ -37,6 +48,11 @@ typedef enum {
 	TK_RESERVED,
 	TK_IDENT,
 	TK_NUM,
+	TK_RETURN,
+	TK_IF,
+	TK_ELSE,
+	TK_WHILE,
+	TK_FOR,
 	TK_EOF,
 }TokenKind;
 

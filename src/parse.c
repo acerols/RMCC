@@ -69,6 +69,15 @@ bool consume(char *op)
 	return true;
 }
 
+bool consume_kind(TokenKind tk)
+{
+	if(token->kind == tk){
+		token = token->next;
+		return true;
+	}
+	return false;
+}
+
 Token *consume_ident()
 {
 	if(token->kind == TK_IDENT){
@@ -99,7 +108,16 @@ void program()
 
 Node *stmt()
 {
-	Node *node = expr();
+	Node *node;
+	if(consume_kind(TK_RETURN)){
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_RETURN;
+		token = token->next;
+		node->lhs = expr();
+	}
+	else{
+		node = expr();
+	}
 	expect(";");
 	return node;
 }

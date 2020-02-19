@@ -26,11 +26,7 @@ int main(int argc, char **argv)
 
 	for(int i = 0; code[i]; i++){
 		gen(code[i]);
-		printf("	pop rax\n");
 	}
 
-	printf("	mov rsp, rbp\n");
-	printf("	pop rbp\n");
-	printf("	ret\n");
 	return 0;
 }
